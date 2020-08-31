@@ -82,9 +82,12 @@ def RSA_dec(ciphertext, key_prv):
     decrypted_hash = cipher_rsa.decrypt(encrypted_hash_bytes).decode("utf-8")  # decrypt and decode using UTF-8
 
     message_hash = compute_hash(msg.encode())
-    # if message_hash == decrypted_hash:
-    #     return True
-    # return False
+
+    # print("Message: ", msg)
+    # print("H(msg): ", message_hash)
+    # print("Encrypted Hash: ", encrypted_hash)
+    # print("Decrypted Hash: ", decrypted_hash)
+
     return message_hash == decrypted_hash
 
     # plaintext = ''
