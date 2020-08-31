@@ -27,7 +27,7 @@ def get_parameters():
 
 def AES_enc(msg, iv, key, mode='CFB'):
     # TODO starts #
-    while len(msg) % 16 != 0:
+    while len(msg) % 16 != 0:  # append whitespace is msg length is not multiple of 16
         msg = msg + b' '
 
     cipher = AES.new(key)
@@ -57,24 +57,38 @@ def AES_dec(ciphertext, iv, key):
 
 def RSA_enc(message, key_pub):
     # TODO starts #
+    FLAG = "|"
 
     message_hash = compute_hash(message)
-    temp_rsa = RSA.importKey(key_pub)
 
-    encrypted = temp_rsa.encrypt(message_hash.encode(), 0)[0]
+    cipher_rsa = RSA.importKey(key_pub)
+    encrypted = cipher_rsa.encrypt(message_hash.encode("utf-8"), 0)[0]  # return a tuple, first item is the ciphertext
 
-    enc_text = encrypted
+    enc_text = message.decode("utf-8") + FLAG + encrypted.hex()
     return enc_text
     # TODO ends   #
 
 
 def RSA_dec(ciphertext, key_prv):
     # TODO starts #
-    temp_rsa = RSA.importKey(key_prv)
-    decrypted = temp_rsa.decrypt(ciphertext)
+    FLAG = "|"
 
-    plaintext = decrypted.decode("utf-8")
-    return plaintext
+    msg = ciphertext[:ciphertext.index(FLAG)]
+    encrypted_hash = ciphertext[ciphertext.index(FLAG) + 1:]
+
+    encrypted_hash_bytes = bytes.fromhex(encrypted_hash)  # convert hex string to bytes
+
+    cipher_rsa = RSA.importKey(key_prv)
+    decrypted_hash = cipher_rsa.decrypt(encrypted_hash_bytes).decode("utf-8")  # decrypt and decode using UTF-8
+
+    message_hash = compute_hash(msg.encode())
+    # if message_hash == decrypted_hash:
+    #     return True
+    # return False
+    return message_hash == decrypted_hash
+
+    # plaintext = ''
+    # return plaintext
     # TODO ends   #
 
 
@@ -100,11 +114,11 @@ def main():
     rsa_signed = RSA_enc(message, RSA_pub)
     rsa_verified = RSA_dec(rsa_signed, RSA_prv)
     print("----------------------------------------------------------")
-    print("The signature after RSA signature\n {}".format(rsa_signed))
-    print("The verification of signed RSA signature is:\n {}".format(rsa_verified))
+    print("The message after RSA signature\n {}".format(rsa_signed))
+    print("The signature verification:\n {}".format(rsa_verified))
     # TODO ends #
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
